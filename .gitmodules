@@ -1,0 +1,6 @@
+[submodule "LittleVulkanEngine/vendor/GLFW"]
+	path = LittleVulkanEngine/vendor/GLFW
+	url = https://github.com/TheCherno/glfw
+[submodule "LittleVulkanEngine/vendor/glm"]
+	path = LittleVulkanEngine/vendor/glm
+	url = https://github.com/g-truc/glm
