@@ -19,7 +19,9 @@ IncludeDir["GLFW"] = "LittleVulkanEngine/vendor/GLFW/include"
 IncludeDir["glm"] = "LittleVulkanEngine/vendor/glm"
 IncludeDir["stb_image"] = "LittleVulkanEngine/vendor/stb_image"
 
-include "LittleVulkanEngine/vendor/GLFW"
+group "Dependencies"
+    include "LittleVulkanEngine/vendor/GLFW"
+group ""
 
 project "LittleVulkanEngine"
     location "LittleVulkanEngine"
