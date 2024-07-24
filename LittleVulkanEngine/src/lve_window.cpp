@@ -1,26 +1,36 @@
-#include "lve_window.h"
+#include "lve_window.hpp"
+
+#include <stdexcept>
 
 namespace lve {
 
 	LveWindow::LveWindow(int width, int height, const std::string& name)
-		: m_Width(width), m_Height(height), m_WindowName(name)
+		: width(width), height(height), windowName(name)
 	{
-		InitWindow();
+		initWindow();
 	}
 
 	LveWindow::~LveWindow()
 	{
-		glfwDestroyWindow(m_Window);
+		glfwDestroyWindow(window);
 		glfwTerminate();
 	}
 
-	void LveWindow::InitWindow()
+	void LveWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
+	{
+		if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create window surface");
+		}
+	}
+
+	void LveWindow::initWindow()
 	{
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-		m_Window = glfwCreateWindow(m_Width, m_Height, m_WindowName.c_str(), nullptr, nullptr);
+		window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
 	}
 
 }

@@ -16,14 +16,17 @@ namespace lve {
 		LveWindow(const LveWindow&) = delete;
 		LveWindow& operator=(const LveWindow&) = delete;
 	
-		bool ShouldClose() { return glfwWindowShouldClose(m_Window); }
+		bool shouldClose() { return glfwWindowShouldClose(window); }
+
+		void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
+
 	private:
-		void InitWindow();
+		void initWindow();
 
-		const int m_Width, m_Height;
+		const int width, height;
 
-		std::string m_WindowName;
-		GLFWwindow* m_Window;
+		std::string windowName;
+		GLFWwindow* window;
 	};
 
 }
