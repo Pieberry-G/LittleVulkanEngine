@@ -35,6 +35,7 @@ namespace lve {
 		LvePipeline(const LvePipeline&) = delete;
 		LvePipeline& operator=(const LvePipeline&) = delete;
 
+		void bind(VkCommandBuffer vommandBuffer);
 		static PipelineConfigInfo defaultPipelineConfigInfo(uint32_t width, uint32_t height);
 	private:
 		static std::vector<char> readFile(const std::string& filepath);
