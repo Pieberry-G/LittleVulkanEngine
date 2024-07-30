@@ -7,6 +7,7 @@ namespace lve {
 
 	FirstApp::FirstApp()
 	{
+		system("CompileShaders.bat");
 		createPipelineLayout();
 		createPipeline();
 		createCommandBuffer();
