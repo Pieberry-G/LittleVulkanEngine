@@ -18,6 +18,7 @@ IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 IncludeDir["GLFW"] = "LittleVulkanEngine/vendor/GLFW/include"
 IncludeDir["glm"] = "LittleVulkanEngine/vendor/glm"
 IncludeDir["stb_image"] = "LittleVulkanEngine/vendor/stb_image"
+IncludeDir["tinyobjloader"] = "LittleVulkanEngine/vendor/tinyobjloader"
 
 group "Dependencies"
     include "LittleVulkanEngine/vendor/GLFW"
@@ -49,7 +50,8 @@ project "LittleVulkanEngine"
         "%{IncludeDir.VulkanSDK}",
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.glm}",
-        "%{IncludeDir.stb_image}"
+        "%{IncludeDir.stb_image}",
+        "%{IncludeDir.tinyobjloader}"
     }
 
     libdirs
