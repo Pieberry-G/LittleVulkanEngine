@@ -1,6 +1,7 @@
 #include "first_app.hpp"
 
 #include "keyboard_movement_controller.hpp"
+#include "lve_buffer.hpp"
 #include "lve_camera.hpp"
 #include "simple_render_system.hpp"
 
@@ -16,6 +17,12 @@
 
 namespace lve {
 
+	struct GlobalUbo
+	{
+		glm::mat4 projectionView{ 1.0f };
+		glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.0f, -3.0f, -1.0f });
+	};
+
 	FirstApp::FirstApp()
 	{
 		system("CompileShaders.bat");
@@ -26,6 +33,16 @@ namespace lve {
 
 	void FirstApp::run()
 	{
+		LveBuffer globalUboBuffer(
+			lveDevice,
+			sizeof(GlobalUbo),
+			LveSwapChain::MAX_FRAMES_IN_FLIGHT,
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+			lveDevice.properties.limits.minUniformBufferOffsetAlignment
+		);
+		globalUboBuffer.map();
+
 		SimpleRenderSystem simpleRenderSystem{ lveDevice, lveRenderer.getSwapChainRendererPass()};
         LveCamera camera{};
 
@@ -42,8 +59,6 @@ namespace lve {
             float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
             currentTime = newTime;
 
-            //frameTime = glm::min(frameTime, MAX_FRAME_TIME);
-
             cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
             camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
@@ -52,8 +67,18 @@ namespace lve {
 
 			if (auto commandBuffer = lveRenderer.beginFrame())
 			{
+				int frameIndex = lveRenderer.getFrameIndex();
+				FrameInfo frameInfo(frameIndex, frameTime, commandBuffer, camera);
+
+				// update
+				GlobalUbo ubo{};
+				ubo.projectionView = camera.getProjection() * camera.getView();
+				globalUboBuffer.writeToBuffer(&ubo, frameIndex);
+				globalUboBuffer.flushIndex(frameIndex);
+
+				// render
 				lveRenderer.beginSwapChainRenderPass(commandBuffer);
-				simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects, camera);
+				simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
 				lveRenderer.endSwapChainRenderPass(commandBuffer);
 				lveRenderer.endFrame();
 			}
