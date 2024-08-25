@@ -64,12 +64,19 @@ namespace lve {
 
 	void FirstApp::loadGameObjects()
 	{
-        std::shared_ptr<LveModel> lveModel = LveModel::createModelFromFile(lveDevice, "models/smooth_vase.obj");
-        auto gameObj = LveGameObject::createGameObject();
-        gameObj.model = lveModel;
-        gameObj.transform.translation = { 0.0f, 0.0f, 2.5f };
-		gameObj.transform.scale = glm::vec3(3.0f);
-        gameObjects.push_back(std::move(gameObj));
+        std::shared_ptr<LveModel> lveModel = LveModel::createModelFromFile(lveDevice, "models/flat_vase.obj");
+        auto flatVase = LveGameObject::createGameObject();
+		flatVase.model = lveModel;
+		flatVase.transform.translation = { -0.5f, 0.5f, 2.5f };
+		flatVase.transform.scale = glm::vec3(3.0f, 1.5f, 3.0f);
+        gameObjects.push_back(std::move(flatVase));
+
+		lveModel = LveModel::createModelFromFile(lveDevice, "models/smooth_vase.obj");
+		auto smoothVase = LveGameObject::createGameObject();
+		smoothVase.model = lveModel;
+		smoothVase.transform.translation = { 0.5f, 0.5f, 2.5f };
+		smoothVase.transform.scale = glm::vec3(3.0f, 1.5f, 3.0f);
+		gameObjects.push_back(std::move(smoothVase));
 	}
 
 }
