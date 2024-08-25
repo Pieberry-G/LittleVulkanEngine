@@ -206,8 +206,6 @@ namespace lve {
 				}
 				indices.push_back(uniqueVertices[vertex]);
 			}
-
-
 		}
 	}
 
