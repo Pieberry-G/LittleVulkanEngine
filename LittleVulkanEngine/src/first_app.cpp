@@ -20,13 +20,18 @@ namespace lve {
 
 	struct GlobalUbo
 	{
-		glm::mat4 projectionView{ 1.0f };
-		glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.0f, -3.0f, -1.0f });
+		alignas(16) glm::mat4 projectionView{ 1.0f };
+		alignas(16) glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.0f, -3.0f, -1.0f });
 	};
 
 	FirstApp::FirstApp()
 	{
 		system("CompileShaders.bat");
+		globalPool = LveDescriptorPool::Builder(lveDevice)
+			.setMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.build();
+
 		loadGameObjects();
 	}
 
@@ -47,7 +52,20 @@ namespace lve {
 			uboBuffers[i]->map();
 		}
 
-		SimpleRenderSystem simpleRenderSystem{ lveDevice, lveRenderer.getSwapChainRendererPass()};
+		auto globalSetLayout = LveDescriptorSetLayout::Builder(lveDevice)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.build();
+
+		std::vector<VkDescriptorSet> globalDescriptorSet(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < globalDescriptorSet.size(); i++)
+		{
+			auto bufferInfo = uboBuffers[i]->descriptorInfo();
+			LveDescriptorWriter(*globalSetLayout, *globalPool)
+				.writeBuffer(0, &bufferInfo)
+				.build(globalDescriptorSet[i]);
+		}
+
+		SimpleRenderSystem simpleRenderSystem{ lveDevice, lveRenderer.getSwapChainRendererPass(), globalSetLayout->getDescriptorSetLayout()};
         LveCamera camera{};
 
         auto viewerObject = LveGameObject::createGameObject();
@@ -72,7 +90,7 @@ namespace lve {
 			if (auto commandBuffer = lveRenderer.beginFrame())
 			{
 				int frameIndex = lveRenderer.getFrameIndex();
-				FrameInfo frameInfo(frameIndex, frameTime, commandBuffer, camera);
+				FrameInfo frameInfo(frameIndex, frameTime, commandBuffer, camera, globalDescriptorSet[frameIndex]);
 
 				// update
 				GlobalUbo ubo{};
