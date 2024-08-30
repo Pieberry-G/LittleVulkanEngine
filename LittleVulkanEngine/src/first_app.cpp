@@ -3,7 +3,8 @@
 #include "keyboard_movement_controller.hpp"
 #include "lve_buffer.hpp"
 #include "lve_camera.hpp"
-#include "simple_render_system.hpp"
+#include "systems/simple_render_system.hpp"
+#include "systems/point_light_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -22,9 +23,10 @@ namespace lve {
 
 	struct GlobalUbo
 	{
-		alignas(16) glm::mat4 projectionView{ 1.0f };
-		alignas(4) glm::vec4 ambientLightColor{ 1.0f, 1.0f, 1.0f, 0.02f };
-		alignas(4) glm::vec3 lightPosition{ -1.0f };
+		glm::mat4 projection{ 1.0f };
+		glm::mat4 view{ 1.0f };
+		glm::vec4 ambientLightColor{ 1.0f, 1.0f, 1.0f, 0.02f };
+		glm::vec3 lightPosition{ -1.0f };
 		alignas(16) glm::vec4 lightColor{ 1.0f }; // w is light intensity
 
 		//alignas(16) glm::vec3 lightDirection = glm::normalize(glm::vec3{ 1.0f, -3.0f, -1.0f });
@@ -72,6 +74,7 @@ namespace lve {
 		}
 
 		SimpleRenderSystem simpleRenderSystem{ lveDevice, lveRenderer.getSwapChainRendererPass(), globalSetLayout->getDescriptorSetLayout()};
+		PointLightSystem pointLightSystem{ lveDevice, lveRenderer.getSwapChainRendererPass(), globalSetLayout->getDescriptorSetLayout()};
         LveCamera camera{};
 
         auto viewerObject = LveGameObject::createGameObject();
@@ -101,13 +104,15 @@ namespace lve {
 
 				// update
 				GlobalUbo ubo{};
-				ubo.projectionView = camera.getProjection() * camera.getView();
+				ubo.projection = camera.getProjection();
+				ubo.view = camera.getView();
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				uboBuffers[frameIndex]->flush();
 
 				// render
 				lveRenderer.beginSwapChainRenderPass(commandBuffer);
 				simpleRenderSystem.renderGameObjects(frameInfo);
+				pointLightSystem.render(frameInfo);
 				lveRenderer.endSwapChainRenderPass(commandBuffer);
 				lveRenderer.endFrame();
 			}
@@ -118,25 +123,25 @@ namespace lve {
 
 	void FirstApp::loadGameObjects()
 	{
-        std::shared_ptr<LveModel> lveModel = LveModel::createModelFromFile(lveDevice, "models/flat_vase.obj");
-        auto flatVase = LveGameObject::createGameObject();
+		std::shared_ptr<LveModel> lveModel = LveModel::createModelFromFile(lveDevice, "models/flat_vase.obj");
+		auto flatVase = LveGameObject::createGameObject();
 		flatVase.model = lveModel;
 		flatVase.transform.translation = { -0.5f, 0.5f, 0.0f };
-		flatVase.transform.scale = glm::vec3(3.0f, 1.5f, 3.0f);
-        gameObjects.emplace(flatVase.getId(), std::move(flatVase));
+		flatVase.transform.scale = { 3.0f, 1.5f, 3.0f };
+		gameObjects.emplace(flatVase.getId(), std::move(flatVase));
 
 		lveModel = LveModel::createModelFromFile(lveDevice, "models/smooth_vase.obj");
 		auto smoothVase = LveGameObject::createGameObject();
 		smoothVase.model = lveModel;
 		smoothVase.transform.translation = { 0.5f, 0.5f, 0.0f };
-		smoothVase.transform.scale = glm::vec3(3.0f, 1.5f, 3.0f);
+		smoothVase.transform.scale = { 3.0f, 1.5f, 3.0f };
 		gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 
 		lveModel = LveModel::createModelFromFile(lveDevice, "models/quad.obj");
 		auto floor = LveGameObject::createGameObject();
 		floor.model = lveModel;
 		floor.transform.translation = { 0.0f, 0.5f, 0.0f };
-		floor.transform.scale = glm::vec3(3.0f, 1.0f, 3.0f);
+		floor.transform.scale = { 3.0f, 1.0f, 3.0f };
 		gameObjects.emplace(floor.getId(), std::move(floor));
 	}
 
