@@ -95,6 +95,7 @@ namespace lve {
 				GlobalUbo ubo{};
 				ubo.projection = camera.getProjection();
 				ubo.view = camera.getView();
+				ubo.inverseView = camera.getInverseView();
 				pointLightSystem.update(frameInfo, ubo);
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				uboBuffers[frameIndex]->flush();
@@ -145,7 +146,7 @@ namespace lve {
 
 		for (int i = 0; i < lightColors.size(); i++)
 		{
-			auto pointLight = LveGameObject::makePointLight(0.2f);
+			auto pointLight = LveGameObject::makePointLight(0.5f);
 			pointLight.color = lightColors[i];
 			auto rotateLight = glm::rotate(glm::mat4(1.0f), (i * glm::two_pi<float>()) / lightColors.size(), glm::vec3(0, -1, 0));
 			pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f));
